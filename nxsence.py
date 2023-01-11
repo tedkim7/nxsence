@@ -72,7 +72,7 @@ def register(args: argparse.Namespace):
             exit()
 
     if not os.path.exists('users'):
-        os.mkdir('logs')
+        os.mkdir('users')
     
     with open(f'users/{register_user.get_name()}.pickle', 'wb') as outfile: ## serialize user
         pickle.dump(register_user, outfile)
