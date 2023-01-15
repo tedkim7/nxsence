@@ -103,7 +103,8 @@ def discord(args: argparse.Namespace):
             format='%(asctime)s %(levelname)-8s %(message)s',
             level=logging.INFO,
             datefmt='%Y-%m-%d %H:%M:%S',
-            force=True)
+            force=True
+        )
         main_user.toggle_log()
     
     discord = discordrpc.Discord(args.log) ## separate from User toggle_log because of how User is set up (serialization)
@@ -112,7 +113,7 @@ def discord(args: argparse.Namespace):
 
     print(f'Displaying status for {displayed_user_name}. To exist, press CTRL+C.')
 
-    active_game: dict = {} ## used to figure out current game's playtime, key: game name, value: time started
+    active_game: dict = {} ## used to figure out current game's playtime, key: game name, value: time started (need to know how long User has been playing)
 
     ## update Discord status
     while True:
@@ -134,20 +135,25 @@ def discord(args: argparse.Namespace):
         logging.info("Fetching user status...")
 
         user_state = displayed_user_status['presence']['state']
+        mii = displayed_user_status['imageUri']
 
         if user_state == 'ONLINE':
             try: ## figure out current playtime, assuming active_game has been updated to include this currently-playing game
-                start = active_game[displayed_user_status['presence']['game']['name']]
+                game = displayed_user_status['presence']['game']['name']
+                start = active_game[game]
             except KeyError:
+                game = displayed_user_status['presence']['game']['name']
                 active_game = {} ## clear dictionary for new game
-                active_game[displayed_user_status['presence']['game']['name']] = int(time.time())
-                start = active_game[displayed_user_status['presence']['game']['name']]
-            discord.update(
-                large_image=displayed_user_status['presence']['game']['imageUri'],
-                small_image=displayed_user_status['imageUri'],
-                status=f"Playing {displayed_user_status['presence']['game']['name']}",
-                start=start
-            )
+                active_game[game] = int(time.time())
+                start = active_game[game]
+
+                ## update the client
+                discord.update(
+                    large_image=game,
+                    small_image=mii,
+                    status=f"Playing {game}",
+                    start=start
+                )
         elif user_state == 'INACTIVE':
             active_game = {}
             discord.update(
@@ -188,7 +194,6 @@ parser_friends = subparsers.add_parser('friends', description="Get a list of thi
 parser_friends.add_argument('user', help='The user whose friends you wish to see.')
 parser_friends.set_defaults(func=friends)
 
-# sys.argv = ['/Users/ted/Desktop/nso/nxsence.py', 'friends', 'clôrox']
 args = parser.parse_args()
 
 
