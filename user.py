@@ -72,7 +72,7 @@ class User:
         Makes a POST request to imink_url and returns a dictionary containing the User's f parameter, request_id, and timestamp, all necessary for logging in.
         '''
         imink_headers = {
-            'User-Agent': 'nxsence/1.0',
+            'User-Agent': 'nxsence/1.1',
             'Content-Type': 'application/json; charset=utf-8'
         }
         imink_json = {
